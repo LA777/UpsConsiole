@@ -12,7 +12,7 @@ namespace UpsConsole
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("App started - version 1.0.2");
+            Console.WriteLine("App started - version 1.0.3");
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -30,13 +30,14 @@ namespace UpsConsole
                     var configuration = hostContext.Configuration;
                     services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
+                    //const string logFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
                     // Add Serilog support
                     Log.Logger = new LoggerConfiguration()
                         .ReadFrom.Configuration(configuration)
                         .Enrich.FromLogContext()
                         .MinimumLevel.Verbose()
-                        .WriteTo.Console()
-                        .WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day)
+                        //.WriteTo.Console()
+                        //.WriteTo.File("log-.txt")
                         .CreateLogger();
 
                     services.AddSingleton(configuration);
