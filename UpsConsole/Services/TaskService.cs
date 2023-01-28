@@ -8,11 +8,13 @@ namespace UpsConsole.Services
         private static bool _isTaskCanceled;
         private readonly ILogger<EventsWorker> _logger;
         private readonly ISshService _sshService;
+        private readonly IWakeOnlineService _wakeOnlineService;
 
-        public TaskService(ILogger<EventsWorker> logger, ISshService sshService)
+        public TaskService(ILogger<EventsWorker> logger, ISshService sshService, IWakeOnlineService wakeOnlineService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sshService = sshService ?? throw new ArgumentNullException(nameof(sshService));
+            _wakeOnlineService = wakeOnlineService ?? throw new ArgumentNullException(nameof(wakeOnlineService));
         }
 
         public int TaskDelay { get; set; } = Utilities.GetMillisecondsFromMinutes(3);
@@ -36,6 +38,12 @@ namespace UpsConsole.Services
             {
                 _isTaskActive = false;
                 _isTaskCanceled = true;
+                _logger.LogInformation("Task Stopped");
+            }
+            else
+            {
+                // Wake PC
+                _wakeOnlineService.WakeOnLan();
             }
         }
 

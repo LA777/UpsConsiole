@@ -12,7 +12,7 @@ namespace UpsConsole
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("App started - version 1.0.0");
+            Console.WriteLine("App started - version 1.0.2");
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -44,6 +44,7 @@ namespace UpsConsole
                     services.AddSingleton<ITaskService, TaskService>();
                     services.AddSingleton<ISshService, SshService>();
                     services.AddSingleton<IConsoleSpinner, ConsoleSpinner>();
+                    services.AddSingleton<IWakeOnlineService, WakeOnlineService>();
                 })
                 .UseSerilog()
                 .UseWindowsService();
