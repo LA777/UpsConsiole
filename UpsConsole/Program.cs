@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Runtime.Versioning;
@@ -12,13 +13,30 @@ namespace UpsConsole
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("App started - version 1.0.3");
+            Console.WriteLine("App started - version 1.0.5");
             CreateHostBuilder(args).Build().Run();
+            Log.CloseAndFlush();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, configuration) =>
+                {
+                    configuration.Sources.Clear();
+
+                    configuration
+                        .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                        .AddJsonFile("appsettings.json", false, true)
+                        .AddJsonFile("appsettings.{Environment.GetEnvironmentVariable(\"ASPNETCORE_ENVIRONMENT\")}.json", true, true);
+
+                    configuration.AddEnvironmentVariables();
+
+                    if (args is { Length: > 0 })
+                    {
+                        configuration.AddCommandLine(args);
+                    }
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     // Set working directory if in production
@@ -30,14 +48,8 @@ namespace UpsConsole
                     var configuration = hostContext.Configuration;
                     services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
-                    //const string logFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
-                    // Add Serilog support
                     Log.Logger = new LoggerConfiguration()
                         .ReadFrom.Configuration(configuration)
-                        .Enrich.FromLogContext()
-                        .MinimumLevel.Verbose()
-                        //.WriteTo.Console()
-                        //.WriteTo.File("log-.txt")
                         .CreateLogger();
 
                     services.AddSingleton(configuration);
